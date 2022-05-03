@@ -6,17 +6,22 @@
 *    This file is copyright under the latest version of the EUPL.
 *    Please see LICENSE file for your rights under this license */
 
+require_once "vendor/autoload.php";
+
 $api = true;
-require_once("scripts/pi-hole/php/FTL.php");
 require_once("scripts/pi-hole/php/password.php");
 require_once("scripts/pi-hole/php/database.php");
 require_once("scripts/pi-hole/php/auth.php");
 check_cors();
 
+$FTL_IP = "127.0.0.1";
+
 $data = array();
 
 // Common API functions
-if (isset($_GET['enable']) && $auth) {
+if (isset($_GET['status'])) {
+    $data = array_merge($data, array("status" => piholeStatusAPI()));
+} elseif (isset($_GET['enable']) && $auth) {
 	if(isset($_GET["auth"]))
 	{
 	if($_GET["auth"] !== $pwhash)
@@ -150,20 +155,17 @@ elseif(isset($_GET['customdns']) && $auth)
 
 	switch ($_GET["action"]) {
 		case 'get':
-			$data = echoCustomDNSEntries();
+			$_POST['action'] = 'get';
 			break;
-
 		case 'add':
-			$data = addCustomDNSEntry();
+			$_POST['action'] = 'add';
 			break;
-
 		case 'delete':
-			$data = deleteCustomDNSEntry();
+			$_POST['action'] = 'delete';
 			break;
+		}
 
-		default:
-			die("Wrong action");
-	}
+	require("scripts/pi-hole/php/customdns.php");
 }
 elseif(isset($_GET['customcname']) && $auth)
 {
@@ -178,20 +180,17 @@ elseif(isset($_GET['customcname']) && $auth)
 
 	switch ($_GET["action"]) {
 		case 'get':
-			$data = echoCustomCNAMEEntries();
+			$_POST['action'] = 'get';
 			break;
-
 		case 'add':
-			$data = addCustomCNAMEEntry();
+			$_POST['action'] = 'add';
 			break;
-
 		case 'delete':
-			$data = deleteCustomCNAMEEntry();
+			$_POST['action'] = 'delete';
 			break;
+		}
 
-		default:
-			die("Wrong action");
-	}
+	require("scripts/pi-hole/php/customcname.php");
 }
 
 // Other API functions
